@@ -14,19 +14,20 @@ Punctuation ":"|";"|","|"."|"["|"]"|"("|")"|"{"|"}"
 InvalidInt 0[0-9]+
 Int 0?|[1-9][0-9]*
 Float ([0-9]*\.[0-9]+)|([0-9]+\.[0-9]*)
-SciNum [0-9]*[Ee][+-]?[0-9]+
+SciNum [0-9]*(.[0-9]*)?[Ee][+-]?[0-9]+
 
 %x LINE
 
 %%
-.*\n {
+\/\/.*\n
+.*$ {
 	strcpy(lineStr, yytext);
 	if (token) {
 		yyless(0);
 		BEGIN LINE;
 	}
 }
-<LINE>" "
+<LINE>" "|"\t"
 <LINE>{Keyword} {
 	printf("key:%s\n", yytext);
 }
