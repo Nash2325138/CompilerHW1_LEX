@@ -15,17 +15,24 @@ Int 0?|[1-9][0-9]*
 Float ([0-9]*\.[0-9]+)|([0-9]+\.[0-9]*)
 SciNum [0-9]*(.[0-9]*)?[Ee][+-]?[0-9]+
 
+ID [a-zA-Z_][a-zA-Z_0-9]*
+
 InvalidInt 0[0-9]+
 InvalidSciNum [0-9]*(.[0-9]*)?[Ee][+-]?[0-9]*\.[0-9]*
+InvalidID [0-9]+[a-zA-Z_]
+InvalidChar '.[^\']+'
+InvalidString {Quote}[^"]*\n
 
 Char '.'|'\\n'|'\\t'
 Quote "\""
 String {Quote}.*{Quote}
 
 %x LINE
+%x COMMENT
 
 %%
-\/\/.*\n
+
+\/\/.*\n {}
 .*\n {
 	strcpy(lineStr, yytext);
 	if (token) {
@@ -43,12 +50,11 @@ String {Quote}.*{Quote}
 <LINE>{Punctuation} {
 	printf("punc:%s\n", yytext);
 }
-<LINE>{InvalidInt}|{InvalidSciNum} {
+<LINE>{InvalidInt}|{InvalidSciNum}|{InvalidID}|{InvalidString}|{InvalidChar} {
 	fprintf(stderr, "Error at line %d: %s\n", lineCount, yytext);
 	//exit(1); 
 }
-
-<LINE>[a-zA-Z_][a-zA-Z_0-9]*	{
+<LINE>{ID}	{
 	printf("id:%s\n", yytext);
 }
 <LINE>{Int}	{
