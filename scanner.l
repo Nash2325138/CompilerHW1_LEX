@@ -13,12 +13,12 @@ Punctuation ":"|";"|","|"."|"["|"]"|"("|")"|"{"|"}"
 
 Int 0?|[1-9][0-9]*
 Float ([0-9]*\.[0-9]+)|([0-9]+\.[0-9]*)
-SciNum [0-9]*(.[0-9]*)?[Ee][+-]?[0-9]+
+SciNum [0-9]+(.[0-9]*)?[Ee][+-]?[0-9]+
 
 ID [a-zA-Z_][a-zA-Z_0-9]*
 
 InvalidInt 0[0-9]+
-InvalidSciNum [0-9]*(.[0-9]*)?[Ee][+-]?[0-9]*\.[0-9]*
+InvalidSciNum [0-9]+(.[0-9]*)?[Ee][+-]?[0-9]*\.[0-9]*
 InvalidID [0-9]+[a-zA-Z_]
 InvalidChar '.[^\']+'
 InvalidString {Quote}[^"]*\n
@@ -41,40 +41,46 @@ String {Quote}.*{Quote}
 	}
 }
 <LINE>" "|"\t"
+<LINE>\/\/.*\n {
+	if (source) {
+		fprintf(stdout, "%d:%s", lineCount++, lineStr);
+	}
+	BEGIN 0;
+}
 <LINE>{Keyword} {
-	printf("key:%s\n", yytext);
+	fprintf(stdout, "#key:%s\n", yytext);
 }
 <LINE>{Operator} {
-	printf("op:%s\n", yytext);
+	fprintf(stdout, "#op:%s\n", yytext);
 }
 <LINE>{Punctuation} {
-	printf("punc:%s\n", yytext);
+	fprintf(stdout, "#punc:%s\n", yytext);
 }
 <LINE>{InvalidInt}|{InvalidSciNum}|{InvalidID}|{InvalidString}|{InvalidChar} {
 	fprintf(stderr, "Error at line %d: %s\n", lineCount, yytext);
 	//exit(1); 
 }
 <LINE>{ID}	{
-	printf("id:%s\n", yytext);
+	fprintf(stdout, "#id:%s\n", yytext);
 }
 <LINE>{Int}	{
-	printf("int:%s\n", yytext);
+	fprintf(stdout, "#int:%s\n", yytext);
 }
 <LINE>{Float}	{
-	printf("double:%s\n", yytext);
+	fprintf(stdout, "#double:%s\n", yytext);
 }
 <LINE>{SciNum} {
-	printf("sci:%s\n", yytext);
+	fprintf(stdout, "#sci:%s\n", yytext);
 }
 <LINE>{Char} {
-	printf("char:%s\n", yytext);
+	fprintf(stdout, "#char:%s\n", yytext);
 }
 <LINE>{String} {
-	printf("string:%s\n", yytext);
+	fprintf(stdout, "#string:%s\n", yytext);
 }
 <LINE>\n {
 	if (source) {
-		printf("%d:%s", lineCount++, lineStr);
+		fprintf(stdout, "%d:%s", lineCount++, lineStr);
 	}
 	BEGIN 0;
 }
