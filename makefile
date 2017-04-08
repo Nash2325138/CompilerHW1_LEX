@@ -1,5 +1,5 @@
 test: scanner
-	./scanner
+	./scanner < myTest/1.c
 lex.yy.c: scanner.l
 	flex scanner.l
 scanner: lex.yy.c
