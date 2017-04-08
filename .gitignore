@@ -1,4 +1,5 @@
 *.pptx
 *.o
+*.out
 lex.yy.c
 scanner
