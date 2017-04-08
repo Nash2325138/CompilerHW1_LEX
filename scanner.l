@@ -20,6 +20,9 @@
 		exit(1); 
 	}
 	void printLine() {
+		if (lineStr[strlen(lineStr)-1] != '\n') {
+			strcat(lineStr, "\n");
+		}
 		if (source) {
 			fprintf(stdout, "%d:%s", lineCount, lineStr);
 		}
@@ -55,21 +58,22 @@ Punctuation ":"|";"|","|"."|"["|"]"|"("|")"|"{"|"}"
 
 Int 0?|[1-9][0-9]*
 Float ([0-9]*\.[0-9]+)|([0-9]+\.[0-9]*)
-SciNum [0-9]+(.[0-9]*)?[Ee][+-]?[0-9]+
+SciNum ({Float}|[0-9]+)[Ee][+-]?[0-9]+
 
 ID [a-zA-Z_][a-zA-Z_0-9]*
 
 InvalidInt 0[0-9]+
-InvalidSciNum [0-9]+(.[0-9]*)?[Ee][+-]?[0-9]*\.[0-9]*
+InvalidSciNum ({Float}|[0-9])+[Ee][+-]?[0-9]*\.[0-9]*
 InvalidID [0-9]+[a-zA-Z_]
 InvalidChar '.[^\']+'
-InvalidString {Quote}[^"]*\n
+InvalidString {Quote}[^"\n]*\n
 
-Quote "\""
 END [ \t\n]
 
 Char '.'|'\\n'|'\\t'
-String {Quote}.*{Quote}
+String {Quote}([^"\n]|\\\")*{Quote}
+
+Quote "\""
 
 %x LINE
 %x COMMENT
@@ -170,12 +174,18 @@ String {Quote}.*{Quote}
 	printLine();
 	BEGIN 0;
 }
+<PRAGMA>"//".*\n {
+	if (!sameLine) strcat(lineStr, yytext);
+	printLine();
+	BEGIN 0;
+}
 <PRAGMA>[^ \t\n]* {
 	errorExit();
 }
 
 <LINE>" " {}
 <LINE>"//".*\n {
+	if (!sameLine) strcat(lineStr, yytext);
 	printLine();
 	BEGIN 0;
 }
@@ -185,7 +195,7 @@ String {Quote}.*{Quote}
 	BEGIN COMMENT;
 }
 <COMMENT>\n {
-	if(!sameLine) strcat(lineStr, yytext);
+	// if(!sameLine) strcat(lineStr, yytext);
 	sameLine = 0;
 	printLine();
 }
@@ -216,9 +226,6 @@ String {Quote}.*{Quote}
 <LINE>{Punctuation} {
 	printToken("punc");
 }
-<LINE>{InvalidInt}|{InvalidSciNum}|{InvalidID}|{InvalidString}|{InvalidChar} {
-	errorExit();
-}
 <LINE>{ID}	{
 	printToken("id");
 }
@@ -237,10 +244,14 @@ String {Quote}.*{Quote}
 <LINE>{String} {
 	printTokenString("string");
 }
+<LINE>{InvalidInt}|{InvalidSciNum}|{InvalidID}|{InvalidString}|{InvalidChar} {
+	errorExit();
+}
 <LINE>. {
 	errorExit();
 }
 <LINE>\n {
+	// if (!sameLine) strcat(lineStr, yytext);
 	printLine();
 	BEGIN 0;
 }
