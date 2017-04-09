@@ -1,12 +1,12 @@
 ANSDIR=test_sample_no_credit/test_answer_student
 TESTDIR=test_sample_no_credit
 DIFF=diff --side-by-side --suppress-common-lines
-test: scanner
-	./scanner < myTest/1.c
+scanner: lex.yy.c
+	gcc -Wall lex.yy.c -o scanner
 lex.yy.c: scanner.l
 	flex scanner.l
-scanner: lex.yy.c
-	gcc lex.yy.c -o scanner
+test: scanner
+	./scanner < myTest/1.c
 diff: scanner
 	# find ./test_sample_no_credit/ -name '*.c' -type f | while read NAME ; do ./scanner < ./test_sample_no_credit/${NAME} > a.out; diff ./test_sample_no_credit/test_answer_student/${NAME%.c}.out; done;
 	./scanner < ${TESTDIR}/pragma_source_off.c 1> good.out && ${DIFF} good.out ${ANSDIR}/pragma_source_off.out
